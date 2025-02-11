@@ -7,7 +7,7 @@ import JWT from "jsonwebtoken";
  export const verifyJWT = asyncHandler( async(req, res,next) => {
     try {
         // how to get token access in this area !!!
-        const token = req.cookies?.accessToken || req.header("Authorization")?.replace("bearer ", "");
+        const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", "");
         if(!token) {
             throw new ApiError(401, "Unauthorized request")
         }
@@ -33,4 +33,3 @@ import JWT from "jsonwebtoken";
 })
 
 
- 
