@@ -304,7 +304,9 @@ const changeCurrentPassword = asyncHandler(async(req, res)=>{
     }
     user.password = newPassword; 
     await user.save({validateBeforeSave:false});
-    return res.status(200, {}, "Password changed Successfully")
+    return res
+    .status(200)
+    .json(new ApiResponse(200,{}, "Password changed Successfully" ));
 
 })
 
@@ -312,7 +314,10 @@ const changeCurrentPassword = asyncHandler(async(req, res)=>{
 
 //-----------------------START GET CURRENT USER CONTROLLER  ----------------------------------------------------
 const getCurrentUser = asyncHandler(async(req, res)=>{
-    return res.status(200, req.user, "Current User fetched Successfully!!!")
+    return res
+    .status(200)
+    .json(new ApiResponse(200, req.user, "Current User fetched Successfully!!!" ));
+    
 })
 //-----------------------END GET CURRENT USER CONTROLLER  ----------------------------------------------------
 
