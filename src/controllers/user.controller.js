@@ -287,10 +287,137 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 });
 //-----------------------END refresh token handle CONTROLLER  ----------------------------------------------------
 
-ApiResponse
+//-----------------------START CHANGE CURRENT PASSWORD CONTROLLER  ----------------------------------------------------
+const changeCurrentPassword = asyncHandler(async(req, res)=>{
+    const {oldPassword, newPassword, confirmPassword} = req.body; 
+
+    const user = await User.findById(req.user?._id)
+    const isPasswordCorrect = await user.isPasswordCorrect(oldPassword);
+    if(!isPasswordCorrect)
+    {
+        throw new ApiError(400, "Invalid old Password");
+    }
+    if(newPassword !== confirmPassword)
+    {
+        throw new ApiError(400, "New password and confirm password should be same")
+        
+    }
+    user.password = newPassword; 
+    await user.save({validateBeforeSave:false});
+    return res.status(200, {}, "Password changed Successfully")
+
+})
+
+//-----------------------END CHANGE CURRENT PASSWORD CONTROLLER  ----------------------------------------------------
+
+//-----------------------START GET CURRENT USER CONTROLLER  ----------------------------------------------------
+const getCurrentUser = asyncHandler(async(req, res)=>{
+    return res.status(200, req.user, "Current User fetched Successfully!!!")
+})
+//-----------------------END GET CURRENT USER CONTROLLER  ----------------------------------------------------
+
+//-----------------------START UPDATE ACCOUNT DETAILS CONTROLLER  ----------------------------------------------------
+const updateAccountDetails = asyncHandler(async(req, res)=>{
+    const {fullname, email} = req.body; 
+
+    if(!fullname || !email) 
+    {
+        throw new ApiError(400, "All fields are required!!!");
+    }
+
+    const user = await User.findByIdAndDelete(
+        req.user?._id,
+        {
+            $set:{
+                fullname,
+                email
+            }
+        },
+        {
+            new: true
+        }
+    ).select("-password")
+
+    return res.status(200)
+            .json(new ApiResponse(200, user, "Account details update Successfully!!!"));
+})
+//-----------------------END UPDATE ACCOUNT DETAILS CONTROLLER  ----------------------------------------------------
+
+//-----------------------START UPDATE USER AVATAR CONTROLLER  ----------------------------------------------------
+const updateUserAvatar = asyncHandler(async(req, res) => {
+    const avatarLocalPath = req.file?.path;
+    if(!avatarLocalPath)
+    {
+        throw new ApiError(400, "Avatar file is missing");
+    }
+
+    const avatar = await uploadOnCloudinary(avatarLocalPath);
+
+    if(!avatar.url) 
+    {
+        throw new ApiError(400, "Error while uploading on avatar!!!");      
+    }
+
+    const user = await User.findByIdAndUpdate(
+        req.user?._id, 
+        {
+            $set:{
+                avatar: avatar.url
+            }
+        },
+        {
+            new: true
+        }
+     ).select("-password")
+
+     return res.status(200)
+            .json(new ApiResponse(200, user, "Avatar Image updated Successfully!!!"));
+})
+
+
+//-----------------------END UPDATE USER AVATAR CONTROLLER  ----------------------------------------------------
+//-----------------------START UPDATE USER COVERiMAGE CONTROLLER  ----------------------------------------------------
+const updateUserCoverImage = asyncHandler(async(req, res) => {
+    const coverImageLocalPath = req.file?.path;
+    if(!coverImageLocalPath)
+    {
+        throw new ApiError(400, "Cover Image file is missing");
+    }
+    const coverImage = await uploadOnCloudinary(coverImageLocalPath);
+
+    if(!coverImage.url) 
+    {
+        throw new ApiError(400, "Error while uploading on Cover Image!!!");      
+    }
+
+    const user = await User.findByIdAndUpdate(
+        req.user?._id, 
+        {
+            $set:{
+                avatar: avatar.url
+            }
+        },
+        {
+            new: true
+        }
+     ).select("-password")
+     return res.status(200)
+            .json(new ApiResponse(200, user, "Cover Image Updated Successfully!!!"));
+})
+//-----------------------END UPDATE USER COVERIMAGE CONTROLLER  ----------------------------------------------------
+
+
+
+// export all the functions in a single object
 export {
     registerUser,
     loginUser,
     logoutUser,
     refreshAccessToken,
+    changeCurrentPassword, 
+    getCurrentUser,
+    updateAccountDetails,
+    updateUserAvatar,
+    updateUserCoverImage,
+
 }
